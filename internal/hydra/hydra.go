@@ -58,7 +58,13 @@ func initiateRequest(typ reqType, hydraURL, challenge string) (*ReqInfo, error) 
 	}
 	u = u.ResolveReference(ref)
 
-	resp, err := http.Get(u.String())
+	r, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.Header.Set("X-Forwarded-Proto", "https")
+	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +107,7 @@ func acceptRequest(typ reqType, hydraURL, challenge string, data interface{}) (s
 	if err != nil {
 		return "", err
 	}
+	r.Header.Set("X-Forwarded-Proto", "https")
 	r.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(r)
 	if err != nil {
